@@ -1,1 +1,0 @@
-HOST = 'https://globalnews.ca/gnca-ajax/load-more/{"tag":"canada-election","last_id":"{0}"}/'

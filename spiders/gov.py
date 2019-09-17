@@ -1,1 +1,0 @@
-HOST = 'https://www.elections.ca/content.aspx?section=med&dir=pre&document=index&lang=e'

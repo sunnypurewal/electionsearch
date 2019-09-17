@@ -1,1 +1,0 @@
-HOST = 'https://www.insidehalton.com/search/news/?category=federal-election&pageindex={0}&pagesize=25'

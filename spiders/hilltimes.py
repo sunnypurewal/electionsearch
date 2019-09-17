@@ -1,1 +1,0 @@
-HOST = 'https://www.hilltimes.com/election-2019'

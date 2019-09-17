@@ -1,1 +1,0 @@
-HOST = 'https://www.macleans.ca/politics/page/{0}/'

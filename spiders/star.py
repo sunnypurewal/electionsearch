@@ -1,1 +1,0 @@
-HOST = 'https://www.thestar.com/news/federal-election.html'
