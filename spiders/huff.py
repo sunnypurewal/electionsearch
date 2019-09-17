@@ -1,0 +1,1 @@
+HOST = 'https://www.huffingtonpost.ca/news/canada-election-2019/{0}/'
