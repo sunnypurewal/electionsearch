@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 import scrapy
 import json
-from headline import Headline
-
 
 class CbcSpider(scrapy.Spider):
   HOST = 'https://www.cbc.ca/aggregate_api/v1/items?typeSet=cbc-ocelot&pageSize=28&page={0}&lineupSlug=news-politics&categorySlug=empty-category&source=polopoly'
@@ -18,7 +16,7 @@ class CbcSpider(scrapy.Spider):
     jsonresponse = json.loads(response.body_as_unicode())
     headlines = []
     for item in jsonresponse:
-      headline = Headline()
+      headline = {}
       headline.title = item["title"]
       headline.title2 = item["typeAttributes"]["deck"]
       headline.description = item["description"]
@@ -30,7 +28,7 @@ class CbcSpider(scrapy.Spider):
       headline.id = item["id"]
       headlines.append(headline)
     if len(jsonresponse) > 0:
-      with open(f"archive/cbc-{self.page}", "w") as f:
+      with open(f"archive/cbc/headlines-{self.page}", "w") as f:
         json.dump(headlines, f, default=lambda x: x.__dict__)
       self.page += 1
       return [scrapy.Request(url=self.HOST.format(self.page))]
