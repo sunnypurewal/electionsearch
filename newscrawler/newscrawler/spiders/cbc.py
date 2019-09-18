@@ -17,15 +17,15 @@ class CbcSpider(scrapy.Spider):
     headlines = []
     for item in jsonresponse:
       headline = {}
-      headline.title = item["title"]
-      headline.title2 = item["typeAttributes"]["deck"]
-      headline.description = item["description"]
-      headline.url = item["typeAttributes"]["url"]
-      headline.imageurl = item["typeAttributes"]["imageLarge"]
-      headline.tags = item["typeAttributes"]["urlSlug"].split("-")
-      headline.score = item["typeAttributes"]["trending"]["numViewers"]
-      headline.timestamp = item["updatedAt"]
-      headline.id = item["id"]
+      headline["title"] = item["title"]
+      headline["title2"] = item["typeAttributes"]["deck"]
+      headline["description"] = item["description"]
+      headline["url"] = item["typeAttributes"]["url"]
+      headline["imageurl"] = item["typeAttributes"]["imageLarge"]
+      headline["tags"] = item["typeAttributes"]["urlSlug"].split("-")
+      headline["score"] = item["typeAttributes"]["trending"]["numViewers"]
+      headline["timestamp"] = item["updatedAt"]
+      headline["id"] = item["id"]
       headlines.append(headline)
     if len(jsonresponse) > 0:
       with open(f"archive/cbc/headlines-{self.page}", "w") as f:
