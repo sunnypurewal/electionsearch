@@ -31,7 +31,7 @@ class PostSpider(scrapy.Spider):
       headlines.append(headline)
     if len(headlines) > 0:
       print(len(headlines))
-      with open(f"archive/{self.publisher}/headlines-{self.page-1}", "w") as f:
+      with open(f"archive/{self.publisher}/headlines-{self.page-1}.jsonc", "w") as f:
         json.dump(headlines, f, default=lambda x: x.__dict__)
       self.page += 1
       return [scrapy.Request(url=self.HOST.format(self.page))]

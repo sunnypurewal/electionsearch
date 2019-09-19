@@ -7,7 +7,7 @@ class GlobeRedoSpider(scrapy.Spider):
   # HOST = 'https://www.theglobeandmail.com/pb/api/v2/render/feature/global/story-feed?wrap=false&service=story-feed-query&contentConfig={"q":"taxonomy.seo_keywords%3A%22Federal%20Election%22%20AND%20NOT%20taxonomy.seo_keywords%3A%22United%20States%22%20AND%20NOT%20taxonomy.seo_keywords%3A%22U.S.%22","from":"{0}","size":"26"}&customFields={"linkTrackFeatureItemsContainerName":"view more articles","end":"20","listDisplayType":"standard","showSectionTitle":false,"loadMore":true,"noInlineAds":true,"feedType":"automatedFeed"}'
   FETCH_HOST = 'https://www.theglobeandmail.com/pb/api/v2/render/feature/global/story-feed?wrap=false&service=story-feed-query&contentConfig=%7B%22q%22%3A%22taxonomy.seo_keywords%253A%2522Federal%2520Election%2522%2520AND%2520NOT%2520taxonomy.seo_keywords%253A%2522United%2520States%2522%2520AND%2520NOT%2520taxonomy.seo_keywords%253A%2522U.S.%2522%22%2C%22from%22%3A%22{0}%22%2C%22size%22%3A%2210%22%7D&customFields=%7B%22linkTrackFeatureItemsContainerName%22%3A%22view%20more%20articles%22%2C%22end%22%3A%2220%22%2C%22listDisplayType%22%3A%22standard%22%2C%22showSectionTitle%22%3Afalse%2C%22loadMore%22%3Atrue%2C%22noInlineAds%22%3Atrue%2C%22feedType%22%3A%22automatedFeed%22%7D'
   HOST = "https://www.theglobeandmail.com"
-  name = 'globe'
+  name = 'globe-redo'
   allowed_domains = ['theglobeandmail.com']
   last_id = 0
   publisher = "globe"

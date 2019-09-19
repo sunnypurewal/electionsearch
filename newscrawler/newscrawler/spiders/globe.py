@@ -13,7 +13,7 @@ class GlobeSpider(scrapy.Spider):
 
   def start_requests(self):
     url = self.FETCH_HOST.format(self.last_id)
-    return [scrapy.Request(url=url)]
+    return [scrapy.Request(url=url,meta={"dont_cache":True})]
 
   def parse(self, response):
     html = json.loads(response.body_as_unicode())["rendering"]
@@ -34,7 +34,7 @@ class GlobeSpider(scrapy.Spider):
         "imgurl": imgurl
       }
       headlines.append(headline)
-    with open(f"archive/{self.publisher}/headlines-{int(self.last_id/10+1)}", "w") as f:
+    with open(f"archive/{self.publisher}/headlines-{int(self.last_id/10+1)}.jsonc", "w") as f:
       json.dump(headlines, f)
     self.last_id += 10
     if self.last_id > 80:

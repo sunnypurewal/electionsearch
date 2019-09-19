@@ -10,8 +10,6 @@ class GlobeArticlesSpider(scrapy.Spider):
   publisher = "globe"
   allowed_domains = ['theglobeandmail.com']
   headlines = []
-  row = -1
-  col = -1
   
   def start_requests(self):
     paths = []
@@ -25,64 +23,44 @@ class GlobeArticlesSpider(scrapy.Spider):
       with open(path, "r") as f:
         items = json.load(f)
         self.headlines.append(items)
-    return [self.next_request()]
+    requests = []
+    for row in self.headlines:
+      for headline in row:
+        request = scrapy.Request(url=headline["url"],meta={"headline":headline})
+        requests.append(request)
+    print (f"Fetching {len(requests)} Articles")
+    return requests
 
   def parse(self, response):
     paragraphs = response.css("p.c-article-body__text::text").getall()
+    headline = response.meta["headline"]
     author = response.css(".c-byline::text").get()
     if author is not None:
       author = author.strip()
-      self.headlines[self.row][self.col]["author"] = author
-    id = self.headlines[self.row][self.col]["id"]
+      headline["author"] = author
+    id = headline["id"]
     tagstring = response.xpath("//head/meta[@name='news_keywords']/@content").get()
     if tagstring is not None:
       tags = []
       for tag in tagstring.split(","):
         tags.append(tag.strip())
-      self.headlines[self.row][self.col]["tags"] = tags
+      headline["tags"] = tags
+    time = int(response.css("time").xpath("@data-unixtime").get())
+    headline["timestamp"] = time
+    idx = -1
+    jdx = -1
+    for i, row in enumerate(self.headlines):
+      for j, h in enumerate(row):
+        if h["id"] == headline["id"]:
+          idx = i
+          jdx = j
+          break
+    if idx != -1:
+      self.headlines[idx][jdx] = headline
     if (len(paragraphs) > 0):
       path = f"archive/{self.publisher}/articles/{id}.txt"
       if not os.path.exists(path):
         with open(f"archive/{self.publisher}/articles/{id}.txt", "w") as f:
           f.write("\n".join(paragraphs))
-      with open(f"archive/{self.publisher}/headlines-{self.row+1}", "w") as f:
-        json.dump(self.headlines[self.row], f, default=lambda x: x.__dict__)
-    return [self.next_request()]
-
-  def next_request(self):
-    if not self.next_index(): return None
-    headline = self.headlines[self.row][self.col]
-    # for filename in (os.listdir(f"archive/{self.publisher}/articles")):
-    #   if (filename.find(str(headline["id"])) != -1):
-    #     return self.next_request()
-    return scrapy.Request(url=headline['url'])
-
-  def next_index(self):
-    print(self.row, self.col, len(self.headlines[self.row]))
-    if self.row == 0 and self.col == 0:
-      self.row = 0
-      self.col = 2
-      return True
-    elif self.row == 0 and self.col == 5:
-      self.col = 7
-      return True
-    elif self.row == 1 and self.col == 1:
-      self.col = 3
-      return True
-    elif self.row == 3 and self.col == 2:
-      self.col = 4
-      return True
-    if self.row == -1:
-      self.row = 0
-      self.col = 0
-      return True
-    elif self.col+1 == len(self.headlines[self.row]) and self.row+1 < len(self.headlines):
-      self.row += 1
-      self.col = 0
-      return True
-    elif self.col+1 < len(self.headlines[self.row]):
-      self.col += 1
-      return True
-    return False
-    
-    
+      with open(f"archive/{self.publisher}/headlines-{idx+1}.jsonc", "w") as f:
+        json.dump(self.headlines[idx], f, default=lambda x: x.__dict__)
