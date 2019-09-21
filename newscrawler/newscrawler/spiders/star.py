@@ -9,13 +9,13 @@ class StarSpider(scrapy.Spider):
   allowed_domains = ['thestar.com']
   HOST = 'https://www.thestar.com/news/federal-election.html'
   domain = 'https://www.thestar.com'
+  headlines = []
 
   def start_requests(self):
     return [scrapy.Request(url=self.HOST,meta={"dont_cache":True})]
 
   def parse(self, response):
     stories = response.css(".story")
-    headlines = []
     for story in stories:
       headline = {}
       a = story.xpath("div[@class='story__body']/span/span/a")
@@ -26,7 +26,7 @@ class StarSpider(scrapy.Spider):
       headline["title"] = title
       headline["title2"] = title2
       headline["id"] = url.split("/")[-1].split(".")[0]
-      headlines.append(headline)
-    if len(headlines) > 0:
-      with open(f"archive/star/headlines", "w") as f:
-        json.dump(headlines, f)
+      self.headlines.append(headline)
+    if len(self.headlines) > 0:
+      with open(f"archive/star/headlines.jsonc", "w") as f:
+        json.dump(self.headlines, f)

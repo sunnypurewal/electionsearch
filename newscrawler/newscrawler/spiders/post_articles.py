@@ -22,15 +22,14 @@ class PostArticlesSpider(scrapy.Spider):
     for path in paths:
       with open(path, "r") as f:
         items = json.load(f)
-        self.headlines.append(items)
+        self.headlines.extend(items)
     requests = []
-    for row in self.headlines:
-      for headline in row:
-        id = headline["id"]
-        path = f"archive/{self.publisher}/articles/{id}.txt"
-        if not os.path.exists(path):
-          request = scrapy.Request(url=headline["url"],meta={"headline":headline})
-          requests.append(request)
+    for headline in self.headlines:
+      id = headline["id"]
+      path = f"archive/{self.publisher}/articles/{id}.txt"
+      if not os.path.exists(path):
+        request = scrapy.Request(url=headline["url"],meta={"headline":headline,"dont_cache":True})
+        requests.append(request)
     print (f"Fetching {len(requests)} Articles")
     return requests
 
@@ -39,48 +38,22 @@ class PostArticlesSpider(scrapy.Spider):
     paragraphs = response.xpath("//div[@class='story-content']/p/text()").getall()
     headline = response.meta["headline"]
     id = headline["id"]
-    datestring = " ".join(response.css("time.pubdate::text").getall())
-    date = dateparser.parse(datestring)
+    datestring = response.xpath("//head/meta[@property='article:published_time']/@content").get()
+    headline["timestamp"] = dateparser.parse(datestring).timestamp()
+    print(headline["timestamp"])
     tags = []
     for tag in response.xpath("//head/meta[@name='news_keywords']/@content").get().split(","):
       tags.append(tag.strip())
-    headline["timestamp"] = date.timestamp()
     headline["tags"] = tags
     idx = -1
-    jdx = -1
-    for i, row in enumerate(self.headlines):
-      for j, h in enumerate(row):
-        if h["id"] == headline["id"]:
-          idx = i
-          jdx = j
-          break
+    for i, h in enumerate(self.headlines):
+      if h["id"] == headline["id"]:
+        idx = i
+        break
     if idx != -1:
-      self.headlines[idx][jdx] = headline
+      self.headlines[idx] = headline
     if (len(paragraphs) > 0):
       with open(f"archive/{self.publisher}/articles/{id}.txt", "w") as f:
         f.write("\n".join(paragraphs))
-      with open(f"archive/{self.publisher}/headlines-{idx+1}.jsonc", "w") as f:
-        json.dump(self.headlines[idx], f, default=lambda x: x.__dict__)
-
-  # def next_request(self):
-  #   if not self.next_index(): return None
-  #   headline = self.headlines[self.row][self.col]
-  #   for filename in (os.listdir(f"archive/{self.publisher}/articles")):
-  #     if (filename.find(str(headline["id"])) != -1):
-  #       return self.next_request()
-  #   return scrapy.Request(url=headline['url'])
-
-  # def next_index(self):
-  #   print(self.row, self.col, len(self.headlines[self.row]))
-  #   if self.row == -1:
-  #     self.row = 0
-  #     self.col = 0
-  #     return True
-  #   elif self.col+1 == len(self.headlines[self.row]) and self.row+1 < len(self.headlines):
-  #     self.row += 1
-  #     self.col = 0
-  #     return True
-  #   elif self.col+1 < len(self.headlines[self.row]):
-  #     self.col += 1
-  #     return True
-  #   return False
+      with open(f"archive/{self.publisher}/headlines.jsonc", "w") as f:
+        json.dump(self.headlines, f, default=lambda x: x.__dict__)

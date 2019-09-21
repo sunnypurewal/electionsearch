@@ -12,7 +12,7 @@ class HeraldSpider(scrapy.Spider):
 
   def start_requests(self):
     url = self.HOST.format(self.page)
-    return [scrapy.Request(url=url)]
+    return [scrapy.Request(url=url,meta={"dont_cache":True})]
 
   def parse(self, response):
     stories = response.css("article.post")

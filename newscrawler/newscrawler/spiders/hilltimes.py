@@ -13,7 +13,7 @@ class HillTimesSpider(scrapy.Spider):
 
   def start_requests(self):
     url = self.HOST.format(self.last_id)
-    return [scrapy.Request(url=url)]
+    return [scrapy.Request(url=url,meta={"dont_cache":True})]
 
   def parse(self, response):
     stories = response.css(".storyBox")

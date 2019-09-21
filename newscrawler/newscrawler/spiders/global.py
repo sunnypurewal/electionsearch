@@ -13,7 +13,7 @@ class GlobalSpider(scrapy.Spider):
 
   def start_requests(self):
     url = self.HOST.format(self.last_id)
-    return [scrapy.Request(url=url)]
+    return [scrapy.Request(url=url,meta={"dont_cache":True})]
 
   def parse(self, response):
     stories = response.css("div.story")
@@ -33,5 +33,5 @@ class GlobalSpider(scrapy.Spider):
       with open(f"archive/{self.publisher}/headlines.jsonc", "w") as f:
         json.dump(self.headlines, f, default=lambda x: x.__dict__)
       url = self.HOST.format(self.last_id)
-      return scrapy.Request(url=url)
+      return scrapy.Request(url=url,meta={"dont_cache":True})
     

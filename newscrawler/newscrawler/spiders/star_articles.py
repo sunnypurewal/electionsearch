@@ -51,22 +51,5 @@ class StarArticlesSpider(scrapy.Spider):
     if len(paragraphs) > 0:
       with open(f"archive/{self.publisher}/articles/{id}.txt", "w") as f:
         f.write("\n".join(paragraphs))
-      with open(f"archive/{self.publisher}/headlines", "w") as f:
+      with open(f"archive/{self.publisher}/headlines.jsonc", "w") as f:
         json.dump(self.headlines, f)
-    # self.index += 1
-    # return [self.next_request()]
-
-  # def next_request(self):
-  #   self.index += 1
-  #   # if self.index > 0:
-  #     # return scrapy.Request(url="")
-  #   try:
-  #     headline = self.headlines[self.index]
-  #     # for filename in (os.listdir(f"archive/{self.publisher}/articles")):
-  #     #   if (filename.find(str(headline["id"])) != -1):
-  #     #     self.index += 1
-  #     #     return self.next_request()
-  #     return scrapy.Request(url=headline['url'])
-  #   except IndexError:
-  #     return scrapy.Request(url="")
-

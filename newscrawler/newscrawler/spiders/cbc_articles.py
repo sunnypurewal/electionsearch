@@ -26,6 +26,7 @@ class CbcArticlesSpider(scrapy.Spider):
       if not os.path.exists(path):
         request = scrapy.Request(url=headline["url"],meta={"id":headline["id"]})
         requests.append(request)
+    print (f"Fetching {len(requests)} Articles for {self.publisher}")
     return requests
 
   def parse(self, response):

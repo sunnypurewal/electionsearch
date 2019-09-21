@@ -22,15 +22,14 @@ class GlobeArticlesSpider(scrapy.Spider):
     for path in paths:
       with open(path, "r") as f:
         items = json.load(f)
-        self.headlines.append(items)
+        self.headlines.extend(items)
     requests = []
-    for row in self.headlines:
-      for headline in row:
-        id = headline["id"]
-        path = f"archive/{self.publisher}/articles/{id}.txt"
-        if not os.path.exists(path):
-          request = scrapy.Request(url=headline["url"],meta={"headline":headline})
-          requests.append(request)
+    for headline in self.headlines:
+      id = headline["id"]
+      path = f"archive/{self.publisher}/articles/{id}.txt"
+      if not os.path.exists(path):
+        request = scrapy.Request(url=headline["url"],meta={"headline":headline})
+        requests.append(request)
     print (f"Fetching {len(requests)} Articles")
     return requests
 
@@ -48,8 +47,8 @@ class GlobeArticlesSpider(scrapy.Spider):
       for tag in tagstring.split(","):
         tags.append(tag.strip())
       headline["tags"] = tags
-    time = int(response.css("time").xpath("@data-unixtime").get())
-    headline["timestamp"] = time
+    datestring = response.xpath("//head/meta[@property='article:published_time']/@content").get()
+    headline["timestamp"] = dateparser.parse(datestring).timestamp()
     idx = -1
     for i, h in enumerate(self.headlines):
         if h["id"] == headline["id"]:
@@ -63,4 +62,4 @@ class GlobeArticlesSpider(scrapy.Spider):
         with open(f"archive/{self.publisher}/articles/{id}.txt", "w") as f:
           f.write("\n".join(paragraphs))
       with open(f"archive/{self.publisher}/headlines.jsonc", "w") as f:
-        json.dump(self.headlines[idx], f, default=lambda x: x.__dict__)
+        json.dump(self.headlines, f, default=lambda x: x.__dict__)

@@ -31,4 +31,4 @@ class CbcSpider(scrapy.Spider):
       with open(f"archive/cbc/headlines.jsonc", "w") as f:
         json.dump(self.headlines, f, default=lambda x: x.__dict__)
       self.page += 1
-      return [scrapy.Request(url=self.HOST.format(self.page))]
+      return [scrapy.Request(url=self.HOST.format(self.page),meta={"dont_cache":True})]

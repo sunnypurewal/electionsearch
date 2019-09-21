@@ -35,13 +35,8 @@ class HeraldArticlesSpider(scrapy.Spider):
     headline = response.meta["headline"]
     id = headline["id"]
     print(id)
-    datestring = response.xpath("//div[@class='byline-dates']/text()").get().strip().split(":")[-1].strip()
-    if datestring is not None:
-      date = dateparser.parse(datestring)
-      if date is not None:
-        headline["timestamp"] = date.timestamp()
-      else:
-        print(datestring)
+    datestring = response.xpath("//head/meta[@property='article:published_time']/@content").get()
+    headline["timestamp"] = dateparser.parse(datestring).timestamp()
     headline["author"] = response.xpath("//div[@class='author-wrap']/span[@class='name']/text()").get()
     tagstring = response.xpath("//meta[@name='news_keywords']/@content").get()
     if tagstring is not None:

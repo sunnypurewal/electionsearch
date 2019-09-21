@@ -12,7 +12,7 @@ class MacleansSpider(scrapy.Spider):
 
   def start_requests(self):
     url = self.HOST.format(self.page)
-    return [scrapy.Request(url=url)]
+    return [scrapy.Request(url=url,meta={"dont_cache":True})]
 
   def parse(self, response):
     stories = response.css("article.post")
@@ -30,5 +30,5 @@ class MacleansSpider(scrapy.Spider):
         json.dump(self.headlines, f, default=lambda x: x.__dict__)
       self.page += 1
       if self.page <= 10:
-        return scrapy.Request(url=self.HOST.format(self.page))
+        return scrapy.Request(url=self.HOST.format(self.page),meta={"dont_cache":True})
     
