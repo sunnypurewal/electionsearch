@@ -10,6 +10,7 @@ class GlobeSpider(scrapy.Spider):
   allowed_domains = ['theglobeandmail.com']
   last_id = 0
   publisher = "globe"
+  headlines = []
 
   def start_requests(self):
     url = self.FETCH_HOST.format(self.last_id)
@@ -19,7 +20,6 @@ class GlobeSpider(scrapy.Spider):
     html = json.loads(response.body_as_unicode())["rendering"]
     res = scrapy.http.HtmlResponse(url=response.url, body=html, encoding="utf-8")
     stories = res.css("div.c-card>a")
-    headlines = []
     for story in stories:
       url = f"{self.HOST}{story.xpath('@href').get()}"
       id = url.split("/")[-2]
@@ -33,11 +33,11 @@ class GlobeSpider(scrapy.Spider):
         "title": title,
         "imgurl": imgurl
       }
-      headlines.append(headline)
-    with open(f"archive/{self.publisher}/headlines-{int(self.last_id/10+1)}.jsonc", "w") as f:
-      json.dump(headlines, f)
+      self.headlines.append(headline)
+    with open(f"archive/{self.publisher}/headlines.jsonc", "w") as f:
+      json.dump(self.headlines, f)
     self.last_id += 10
     if self.last_id > 80:
       return scrapy.Request(url="")
     else:
-      return scrapy.Request(url=self.FETCH_HOST.format(self.last_id))
+      return scrapy.Request(url=self.FETCH_HOST.format(self.last_id),meta={"dont_cache":True})

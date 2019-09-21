@@ -51,19 +51,16 @@ class GlobeArticlesSpider(scrapy.Spider):
     time = int(response.css("time").xpath("@data-unixtime").get())
     headline["timestamp"] = time
     idx = -1
-    jdx = -1
-    for i, row in enumerate(self.headlines):
-      for j, h in enumerate(row):
+    for i, h in enumerate(self.headlines):
         if h["id"] == headline["id"]:
           idx = i
-          jdx = j
           break
     if idx != -1:
-      self.headlines[idx][jdx] = headline
+      self.headlines[idx] = headline
     if (len(paragraphs) > 0):
       path = f"archive/{self.publisher}/articles/{id}.txt"
       if not os.path.exists(path):
         with open(f"archive/{self.publisher}/articles/{id}.txt", "w") as f:
           f.write("\n".join(paragraphs))
-      with open(f"archive/{self.publisher}/headlines-{idx+1}.jsonc", "w") as f:
+      with open(f"archive/{self.publisher}/headlines.jsonc", "w") as f:
         json.dump(self.headlines[idx], f, default=lambda x: x.__dict__)

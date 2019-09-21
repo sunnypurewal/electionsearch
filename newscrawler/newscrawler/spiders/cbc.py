@@ -7,6 +7,7 @@ class CbcSpider(scrapy.Spider):
   name = 'cbc'
   allowed_domains = ['cbc.ca']
   page = 1
+  headlines = []
 
   def start_requests(self):
     url = self.HOST.format(self.page)
@@ -14,7 +15,6 @@ class CbcSpider(scrapy.Spider):
 
   def parse(self, response):
     jsonresponse = json.loads(response.body_as_unicode())
-    headlines = []
     for item in jsonresponse:
       headline = {}
       headline["title"] = item["title"]
@@ -26,9 +26,9 @@ class CbcSpider(scrapy.Spider):
       headline["score"] = item["typeAttributes"]["trending"]["numViewers"]
       headline["timestamp"] = item["updatedAt"]
       headline["id"] = item["id"]
-      headlines.append(headline)
+      self.headlines.append(headline)
     if len(jsonresponse) > 0:
-      with open(f"archive/cbc/headlines-{self.page}", "w") as f:
-        json.dump(headlines, f, default=lambda x: x.__dict__)
+      with open(f"archive/cbc/headlines.jsonc", "w") as f:
+        json.dump(self.headlines, f, default=lambda x: x.__dict__)
       self.page += 1
       return [scrapy.Request(url=self.HOST.format(self.page))]
