@@ -26,8 +26,11 @@ class GlobeArticlesSpider(scrapy.Spider):
     requests = []
     for row in self.headlines:
       for headline in row:
-        request = scrapy.Request(url=headline["url"],meta={"headline":headline})
-        requests.append(request)
+        id = headline["id"]
+        path = f"archive/{self.publisher}/articles/{id}.txt"
+        if not os.path.exists(path):
+          request = scrapy.Request(url=headline["url"],meta={"headline":headline})
+          requests.append(request)
     print (f"Fetching {len(requests)} Articles")
     return requests
 

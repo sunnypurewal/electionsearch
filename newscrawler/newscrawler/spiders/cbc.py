@@ -10,7 +10,7 @@ class CbcSpider(scrapy.Spider):
 
   def start_requests(self):
     url = self.HOST.format(self.page)
-    return [scrapy.Request(url=url)]
+    return [scrapy.Request(url=url,meta={"dont_cache":True})]
 
   def parse(self, response):
     jsonresponse = json.loads(response.body_as_unicode())

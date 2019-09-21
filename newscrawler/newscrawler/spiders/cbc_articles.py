@@ -6,6 +6,7 @@ import json
 class CbcArticlesSpider(scrapy.Spider):
   name = 'cbc-articles'
   allowed_domains = ['cbc.ca']
+  publisher = "cbc"
   # headlines = []
   # index = -1
   
@@ -20,8 +21,11 @@ class CbcArticlesSpider(scrapy.Spider):
         headlines.extend(items)
     requests = []
     for headline in headlines:
-      request = scrapy.Request(url=headline["url"],meta={"id":headline["id"]})
-      requests.append(request)
+      id = headline["id"]
+      path = f"archive/{self.publisher}/articles/{id}.txt"
+      if not os.path.exists(path):
+        request = scrapy.Request(url=headline["url"],meta={"id":headline["id"]})
+        requests.append(request)
     return requests
 
   def parse(self, response):

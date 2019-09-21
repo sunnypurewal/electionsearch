@@ -11,7 +11,7 @@ class StarSpider(scrapy.Spider):
   domain = 'https://www.thestar.com'
 
   def start_requests(self):
-    return [scrapy.Request(url=self.HOST)]
+    return [scrapy.Request(url=self.HOST,meta={"dont_cache":True})]
 
   def parse(self, response):
     stories = response.css(".story")

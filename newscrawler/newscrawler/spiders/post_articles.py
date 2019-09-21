@@ -24,10 +24,13 @@ class PostArticlesSpider(scrapy.Spider):
         items = json.load(f)
         self.headlines.append(items)
     requests = []
-    for row in enumerate(self.headlines):
-      for headline in enumerate(row):
-        request = scrapy.Request(url=headline["url"],meta={"headline":headline})
-        requests.append(request)
+    for row in self.headlines:
+      for headline in row:
+        id = headline["id"]
+        path = f"archive/{self.publisher}/articles/{id}.txt"
+        if not os.path.exists(path):
+          request = scrapy.Request(url=headline["url"],meta={"headline":headline})
+          requests.append(request)
     print (f"Fetching {len(requests)} Articles")
     return requests
 
@@ -55,7 +58,6 @@ class PostArticlesSpider(scrapy.Spider):
       self.headlines[idx][jdx] = headline
     if (len(paragraphs) > 0):
       with open(f"archive/{self.publisher}/articles/{id}.txt", "w") as f:
-        print("Writing out article")
         f.write("\n".join(paragraphs))
       with open(f"archive/{self.publisher}/headlines-{idx+1}.jsonc", "w") as f:
         json.dump(self.headlines[idx], f, default=lambda x: x.__dict__)
