@@ -31,7 +31,7 @@ class PostSpider(headlinespider.HeadlineSpider):
         headline["imgurl"] = imgsrc2
       headline["id"] = post.xpath("@data-event-tracking").get().split("|")[-2]
       if self.should_get_article(headline["id"]):
-        yield scrapy.Request(url=headline["url"],meta={"dont_cache":self.dont_cache,"headline":headline},callback=self.parse_body)
+        yield scrapy.Request(url=headline["url"],meta={"dont_cache":False,"headline":headline},callback=self.parse_body)
     self.page += 1
     yield scrapy.Request(url=self.HOST.format(self.page),meta={"dont_cache":self.dont_cache})
 

@@ -36,7 +36,7 @@ class GlobeSpider(headlinespider.HeadlineSpider):
         "imgurl": imgurl
       })
       if self.should_get_article(headline["id"]):
-        yield scrapy.Request(url=headline["url"],meta={"dont_cache":self.dont_cache,"headline":headline},callback=self.parse_body)
+        yield scrapy.Request(url=headline["url"],meta={"dont_cache":False,"headline":headline},callback=self.parse_body)
     self.last_id += 10
     if self.last_id <= 80:
       yield scrapy.Request(url=self.FETCH_HOST.format(self.last_id),meta={"dont_cache":self.dont_cache})

@@ -26,7 +26,7 @@ class MacleansSpider(headlinespider.HeadlineSpider):
       headline["id"] = story.xpath("@id").get().split("-")[-1]
       headline["imgurl"] = story.css("img").xpath("@data-src").get()
       if self.should_get_article(headline["id"]):
-        yield scrapy.Request(url=headline["url"],meta={"dont_cache":self.dont_cache,"headline":headline},callback=self.parse_body)
+        yield scrapy.Request(url=headline["url"],meta={"dont_cache":False,"headline":headline},callback=self.parse_body)
     self.page += 1
     if self.page <= 10:
       yield scrapy.Request(url=self.HOST.format(self.page),meta={"dont_cache":self.dont_cache})

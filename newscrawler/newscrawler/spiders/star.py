@@ -29,7 +29,7 @@ class StarSpider(headlinespider.HeadlineSpider):
       headline["title2"] = title2
       headline["id"] = url.split("/")[-1].split(".")[0]
       if self.should_get_article(headline["id"]):
-        yield scrapy.Request(url=headline["url"],meta={"dont_cache":self.dont_cache,"headline":headline},callback=self.parse_body)
+        yield scrapy.Request(url=headline["url"],meta={"dont_cache":False,"headline":headline},callback=self.parse_body)
 
   def parse_body(self, response):
     paragraphs = response.xpath("//div[@class='main-content']/p[@class='text-block-container']/text()").getall()

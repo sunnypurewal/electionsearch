@@ -30,7 +30,7 @@ class GlobalSpider(headlinespider.HeadlineSpider):
       headline["imgurl"] = article.css("img.story-img").xpath("@src").get()
       self.last_id = int(headline["id"])
       if self.should_get_article(headline["id"]):
-        yield scrapy.Request(url=headline["url"],meta={"dont_cache":self.dont_cache,"headline":headline},callback=self.parse_body)
+        yield scrapy.Request(url=headline["url"],meta={"dont_cache":False,"headline":headline},callback=self.parse_body)
     url = self.HOST.format(self.last_id)
     yield scrapy.Request(url=url,meta={"dont_cache":self.dont_cache})
     

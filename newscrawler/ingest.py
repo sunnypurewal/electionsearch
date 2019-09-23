@@ -1,4 +1,4 @@
-import headline_updater
+import crawler
 import os
 import sys
 import shutil
@@ -12,6 +12,9 @@ def main(archivedir, tmp="tmp"):
   if not os.path.exists(tmp):
     print ("Creating tmp directory")
     os.mkdir(tmp)
+  if not os.path.exists(archivedir):
+    print ("Creating archive directory")
+    os.mkdir(archivedir)
 
   publishers = ["cbc", "star", "post", "global", "globe", "macleans", "herald"]
   # publishers = ["cbc"]
@@ -19,12 +22,17 @@ def main(archivedir, tmp="tmp"):
   for p in publishers:
     if not os.path.exists(f"{tmp}/{p}"):
       os.mkdir(f"{tmp}/{p}")
-      os.mkdir(f"{tmp}/{p}/articles")    
+      os.mkdir(f"{tmp}/{p}/articles")
     os.chown(f"{tmp}/{p}", os.getuid(), -1)
     os.chown(f"{tmp}/{p}/articles", os.getuid(), -1)
+    if not os.path.exists(f"{archivedir}/{p}"):
+      os.mkdir(f"{archivedir}/{p}")
+      os.mkdir(f"{archivedir}/{p}/articles")
+    os.chown(f"{archivedir}/{p}", os.getuid(), -1)
+    os.chown(f"{archivedir}/{p}/articles", os.getuid(), -1)
 
-  print ("Updating headlines")
-  headline_updater.update(publishers, tmp, archivedir, False)
+  print ("Crawling")
+  crawler.crawl(publishers, tmp, archivedir, True)
 
   shutil.rmtree(tmp)
 

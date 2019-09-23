@@ -4,6 +4,7 @@ import json
 import logging
 import os
 import shutil
+from elasticsearch import Elasticsearch
 
 class HeadlineSpider(scrapy.Spider):
   def __init__(self, domain="", *args, **kwargs):
@@ -23,15 +24,23 @@ class HeadlineSpider(scrapy.Spider):
     return not os.path.exists(f"{self.archivedir}/{self.name}/articles/{id}.txt")
   
   def closed(self, reason):
+    es = Elasticsearch()
     headlines = []
-    with open(f"{self.archivedir}/{self.name}/headlines.jsonc", "r") as f:
-      fstring = f.read()
-      if len(fstring) > 0:
-        headlines.extend(json.loads(fstring))
+    if os.path.exists(f"{self.archivedir}/{self.name}/headlines.jsonc"):
+      with open(f"{self.archivedir}/{self.name}/headlines.jsonc", "r") as f:
+        fstring = f.read()
+        if len(fstring) > 0:
+          headlines.extend(json.loads(fstring))
     with open(f"{self.path}/{self.name}/headlines.jsonc", "r") as f:
       fstring = f.read()
       if len(fstring) > 0:
-        headlines.extend(json.loads(fstring))
+        tmp = json.loads(fstring)
+        for h in tmp:
+          with open(f"{self.path}/{self.name}/articles/{h['id']}.txt", "r") as f2:
+            h["body"] = "\n".join(f2.readlines())
+            h["timestamp"] = int(h["timestamp"]) * 1000
+            es.index(index="articles",id=h["id"],body=h)
+        headlines.extend(tmp)
     with open(f"{self.archivedir}/{self.name}/headlines.jsonc", "w") as f:
       json.dump(headlines, f, default=lambda x: x.__dict__)
     for filename in os.listdir(f"{self.path}/{self.name}/articles"):
