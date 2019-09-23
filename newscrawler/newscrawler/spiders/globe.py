@@ -2,6 +2,9 @@
 import scrapy
 import json
 import headlinespider
+from headline import Headline
+import dateparser
+import datetime
 
 class GlobeSpider(headlinespider.HeadlineSpider):
   # HOST = 'https://www.theglobeandmail.com/pb/api/v2/render/feature/global/story-feed?wrap=false&service=story-feed-query&contentConfig={"q":"taxonomy.seo_keywords%3A%22Federal%20Election%22%20AND%20NOT%20taxonomy.seo_keywords%3A%22United%20States%22%20AND%20NOT%20taxonomy.seo_keywords%3A%22U.S.%22","from":"{0}","size":"26"}&customFields={"linkTrackFeatureItemsContainerName":"view more articles","end":"20","listDisplayType":"standard","showSectionTitle":false,"loadMore":true,"noInlineAds":true,"feedType":"automatedFeed"}'
@@ -25,16 +28,34 @@ class GlobeSpider(headlinespider.HeadlineSpider):
       author = story.css("span.c-card__author::text").get()
       title = story.css("div.c-card__hed-text::text").get()
       imgurl = story.css("img.c-image").xpath("@src").get()
-      headline = {
+      headline = Headline({
         "id": id,
         "url": url,
         "author": author,
         "title": title,
         "imgurl": imgurl
-      }
-      self.headlines.append(headline)
+      })
+      if self.should_get_article(headline["id"]):
+        yield scrapy.Request(url=headline["url"],meta={"dont_cache":self.dont_cache,"headline":headline},callback=self.parse_body)
     self.last_id += 10
-    if self.last_id > 80:
-      return scrapy.Request(url="")
-    else:
-      return scrapy.Request(url=self.FETCH_HOST.format(self.last_id),meta={"dont_cache":self.dont_cache})
+    if self.last_id <= 80:
+      yield scrapy.Request(url=self.FETCH_HOST.format(self.last_id),meta={"dont_cache":self.dont_cache})
+
+  def parse_body(self, response):
+    paragraphs = response.css("p.c-article-body__text::text").getall()
+    headline = response.meta["headline"]
+    author = response.css(".c-byline::text").get()
+    if author is not None:
+      author = author.strip()
+      headline["author"] = author
+    id = headline["id"]
+    tagstring = response.xpath("//head/meta[@name='news_keywords']/@content").get()
+    if tagstring is not None:
+      tags = []
+      for tag in tagstring.split(","):
+        tags.append(tag.strip())
+      headline["tags"] = tags
+    datestring = response.xpath("//head/meta[@property='article:published_time']/@content").get()
+    headline["timestamp"] = dateparser.parse(datestring).timestamp()
+    if self.save_article(id, paragraphs):
+      return headline

@@ -2,6 +2,9 @@
 import scrapy
 import json
 import headlinespider
+from headline import Headline
+import dateparser
+import datetime
 
 class GlobalSpider(headlinespider.HeadlineSpider):
   name = 'global'
@@ -17,7 +20,7 @@ class GlobalSpider(headlinespider.HeadlineSpider):
   def parse(self, response):
     stories = response.css("div.story")
     for story in stories:
-      headline = {}
+      headline = Headline()
       article = story.css("article")
       a = story.css("h3.story-h").xpath("a")
       headline["url"] = a.xpath("@href").get()
@@ -26,7 +29,19 @@ class GlobalSpider(headlinespider.HeadlineSpider):
       headline["id"] = story.xpath("@data-post_id").get()
       headline["imgurl"] = article.css("img.story-img").xpath("@src").get()
       self.last_id = int(headline["id"])
-      self.headlines.append(headline)
+      if self.should_get_article(headline["id"]):
+        yield scrapy.Request(url=headline["url"],meta={"dont_cache":self.dont_cache,"headline":headline},callback=self.parse_body)
     url = self.HOST.format(self.last_id)
-    return scrapy.Request(url=url,meta={"dont_cache":self.dont_cache})
+    yield scrapy.Request(url=url,meta={"dont_cache":self.dont_cache})
     
+  def parse_body(self, response):
+    paragraphs = response.css("span.gnca-article-story-txt").xpath("p/text()").getall()
+    headline = response.meta["headline"]
+    id = headline["id"]
+    tagstring = response.xpath("//body/meta[@name='news_keywords']/@content").get()
+    headline["tags"] = tagstring.split(",")
+    datestring = response.xpath("//head/meta[@name='pubdate']/@content").get()
+    date = dateparser.parse(datestring)
+    headline["timestamp"] = date.timestamp()
+    if self.save_article(id, paragraphs):
+      return headline

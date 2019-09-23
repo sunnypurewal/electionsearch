@@ -10,8 +10,7 @@ class ArticleSpider(scrapy.Spider):
     self.path = kwargs["path"]
     self.archivedir = kwargs["archivedir"]
     self.dont_cache = kwargs["dont_cache"]
-    # logging.getLogger("scrapy").propagate = False
-    logging.getLogger("scrapy").setLevel(5)
+    logging.getLogger("scrapy").propagate = False
 
   def start_requests(self):
     headlines = []

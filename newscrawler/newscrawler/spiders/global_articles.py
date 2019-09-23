@@ -8,7 +8,6 @@ import articlespider
 
 class GlobalArticlesSpider(articlespider.ArticleSpider):
   name = 'global-articles'
-  publisher = "global"
   allowed_domains = ['globalnews.ca']
   HOST = "https://globalnews.ca"
 

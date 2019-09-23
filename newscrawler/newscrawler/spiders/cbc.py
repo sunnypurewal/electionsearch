@@ -2,6 +2,9 @@
 import scrapy
 import json
 import headlinespider
+from headline import Headline
+import dateparser
+import datetime
 
 class CBCSpider(headlinespider.HeadlineSpider):
   HOST = 'https://www.cbc.ca/aggregate_api/v1/items?typeSet=cbc-ocelot&pageSize=28&page={0}&lineupSlug=news-politics&categorySlug=empty-category&source=polopoly'
@@ -16,17 +19,25 @@ class CBCSpider(headlinespider.HeadlineSpider):
   def parse(self, response):
     jsonresponse = json.loads(response.body_as_unicode())
     for item in jsonresponse:
-      headline = {}
+      headline = Headline()
       headline["title"] = item["title"]
       headline["title2"] = item["typeAttributes"]["deck"]
       headline["description"] = item["description"]
       headline["url"] = item["typeAttributes"]["url"]
-      headline["imageurl"] = item["typeAttributes"]["imageLarge"]
+      headline["imgurl"] = item["typeAttributes"]["imageLarge"]
       headline["tags"] = item["typeAttributes"]["urlSlug"].split("-")
       headline["score"] = item["typeAttributes"]["trending"]["numViewers"]
       headline["timestamp"] = item["updatedAt"]
       headline["id"] = item["id"]
-      self.headlines.append(headline)
+      if self.should_get_article(headline["id"]):
+        yield scrapy.Request(url=headline["url"],meta={"dont_cache":self.dont_cache,"headline":headline},callback=self.parse_body)
     self.page += 1
     if self.page < 10:
-      return [scrapy.Request(url=self.HOST.format(self.page),meta={"dont_cache":self.dont_cache})]
+      yield scrapy.Request(url=self.HOST.format(self.page),meta={"dont_cache":self.dont_cache})
+
+  def parse_body(self, response):
+    paragraphs = response.xpath("//div[@class='story']/span/p/text()").getall()
+    headline = response.meta["headline"]
+    id = headline["id"]
+    if self.save_article(id, paragraphs):
+      return headline

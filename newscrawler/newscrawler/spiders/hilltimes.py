@@ -8,8 +8,6 @@ class HillTimesSpider(scrapy.Spider):
   HOST = 'https://www.hilltimes.com/election-2019'
   last_id = 0
   page = 1
-  publisher = "hilltimes"
-  headlines = []
 
   def start_requests(self):
     url = self.HOST.format(self.last_id)
@@ -25,9 +23,4 @@ class HillTimesSpider(scrapy.Spider):
       headline["author"] = story.css(".hauthor").css("a::text").get()
       headline["id"] = story.css(".htitle3,.htitle8").xpath("a/@href").get().split("/")[-1]
       headline["imgurl"] = story.css("a>img").xpath("@src").get()
-      self.headlines.append(headline)
-    if len(self.headlines) > 0:
-      print(len(self.headlines))
-      with open(f"archive/{self.publisher}/headlines.jsonc", "w") as f:
-        json.dump(self.headlines, f, default=lambda x: x.__dict__)
-    
+      yield headline

@@ -18,7 +18,6 @@ class PostArticlesSpider(articlespider.ArticleSpider):
     id = headline["id"]
     datestring = response.xpath("//head/meta[@property='article:published_time']/@content").get()
     headline["timestamp"] = dateparser.parse(datestring).timestamp()
-    print(headline["timestamp"])
     tags = []
     for tag in response.xpath("//head/meta[@name='news_keywords']/@content").get().split(","):
       tags.append(tag.strip())

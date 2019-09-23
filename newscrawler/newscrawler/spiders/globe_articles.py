@@ -8,7 +8,6 @@ import articlespider
 
 class GlobeArticlesSpider(articlespider.ArticleSpider):
   name = 'globe-articles'
-  publisher = "globe"
   allowed_domains = ['theglobeandmail.com']
 
   def parse(self, response):
