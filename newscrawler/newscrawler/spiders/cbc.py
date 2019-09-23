@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 import scrapy
 import json
+import headlinespider
 
-class CbcSpider(scrapy.Spider):
+class CBCSpider(headlinespider.HeadlineSpider):
   HOST = 'https://www.cbc.ca/aggregate_api/v1/items?typeSet=cbc-ocelot&pageSize=28&page={0}&lineupSlug=news-politics&categorySlug=empty-category&source=polopoly'
   name = 'cbc'
   allowed_domains = ['cbc.ca']
   page = 1
-  headlines = []
 
   def start_requests(self):
     url = self.HOST.format(self.page)
-    return [scrapy.Request(url=url,meta={"dont_cache":True})]
+    return [scrapy.Request(url=url,meta={"dont_cache":self.dont_cache})]
 
   def parse(self, response):
     jsonresponse = json.loads(response.body_as_unicode())
@@ -27,8 +27,6 @@ class CbcSpider(scrapy.Spider):
       headline["timestamp"] = item["updatedAt"]
       headline["id"] = item["id"]
       self.headlines.append(headline)
-    if len(jsonresponse) > 0:
-      with open(f"archive/cbc/headlines.jsonc", "w") as f:
-        json.dump(self.headlines, f, default=lambda x: x.__dict__)
-      self.page += 1
-      return [scrapy.Request(url=self.HOST.format(self.page),meta={"dont_cache":True})]
+    self.page += 1
+    if self.page < 10:
+      return [scrapy.Request(url=self.HOST.format(self.page),meta={"dont_cache":self.dont_cache})]

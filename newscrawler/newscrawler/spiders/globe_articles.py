@@ -4,34 +4,12 @@ import os
 import json
 import dateparser
 import datetime
+import articlespider
 
-class GlobeArticlesSpider(scrapy.Spider):
+class GlobeArticlesSpider(articlespider.ArticleSpider):
   name = 'globe-articles'
   publisher = "globe"
   allowed_domains = ['theglobeandmail.com']
-  headlines = []
-  
-  def start_requests(self):
-    paths = []
-    for filename in (os.listdir(f"archive/{self.publisher}")):
-      if filename.find("headlines") == -1: continue
-      path = f"archive/{self.publisher}/{filename}"
-      if os.path.isdir(path): continue
-      paths.append(path)
-    paths.sort()
-    for path in paths:
-      with open(path, "r") as f:
-        items = json.load(f)
-        self.headlines.extend(items)
-    requests = []
-    for headline in self.headlines:
-      id = headline["id"]
-      path = f"archive/{self.publisher}/articles/{id}.txt"
-      if not os.path.exists(path):
-        request = scrapy.Request(url=headline["url"],meta={"headline":headline})
-        requests.append(request)
-    print (f"Fetching {len(requests)} Articles")
-    return requests
 
   def parse(self, response):
     paragraphs = response.css("p.c-article-body__text::text").getall()
@@ -56,10 +34,4 @@ class GlobeArticlesSpider(scrapy.Spider):
           break
     if idx != -1:
       self.headlines[idx] = headline
-    if (len(paragraphs) > 0):
-      path = f"archive/{self.publisher}/articles/{id}.txt"
-      if not os.path.exists(path):
-        with open(f"archive/{self.publisher}/articles/{id}.txt", "w") as f:
-          f.write("\n".join(paragraphs))
-      with open(f"archive/{self.publisher}/headlines.jsonc", "w") as f:
-        json.dump(self.headlines, f, default=lambda x: x.__dict__)
+    self.save_article(id, paragraphs)

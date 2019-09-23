@@ -1,18 +1,17 @@
 # -*- coding: utf-8 -*-
 import scrapy
 import json
+import headlinespider
 
-class MacleansSpider(scrapy.Spider):
+class MacleansSpider(headlinespider.HeadlineSpider):
   name = 'macleans'
   allowed_domains = ['macleans.ca']
   HOST = 'https://www.macleans.ca/politics/page/{0}/'
   page = 1
-  publisher = "macleans"
-  headlines = []
 
   def start_requests(self):
     url = self.HOST.format(self.page)
-    return [scrapy.Request(url=url,meta={"dont_cache":True})]
+    return [scrapy.Request(url=url,meta={"dont_cache":self.dont_cache})]
 
   def parse(self, response):
     stories = response.css("article.post")
@@ -24,11 +23,7 @@ class MacleansSpider(scrapy.Spider):
       headline["id"] = story.xpath("@id").get().split("-")[-1]
       headline["imgurl"] = story.css("img").xpath("@data-src").get()
       self.headlines.append(headline)
-    if len(self.headlines) > 0:
-      print(len(self.headlines))
-      with open(f"archive/{self.publisher}/headlines.jsonc", "w") as f:
-        json.dump(self.headlines, f, default=lambda x: x.__dict__)
-      self.page += 1
-      if self.page <= 10:
-        return scrapy.Request(url=self.HOST.format(self.page),meta={"dont_cache":True})
+    self.page += 1
+    if self.page <= 10:
+      return scrapy.Request(url=self.HOST.format(self.page),meta={"dont_cache":self.dont_cache})
     

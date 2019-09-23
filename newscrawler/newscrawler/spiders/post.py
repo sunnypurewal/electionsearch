@@ -1,18 +1,17 @@
 # -*- coding: utf-8 -*-
 import scrapy
 import json
+import headlinespider
 
-class PostSpider(scrapy.Spider):
+class PostSpider(headlinespider.HeadlineSpider):
   HOST = 'https://nationalpost.com/category/news/politics/election-2019/page/{0}'
   name = 'post'
   allowed_domains = ['nationalpost.com']
   page = 1
-  publisher = "post"
-  headlines = []
 
   def start_requests(self):
     url = self.HOST.format(self.page)
-    return [scrapy.Request(url=url,meta={"dont_cache":True})]
+    return [scrapy.Request(url=url,meta={"dont_cache":self.dont_cache})]
 
   def parse(self, response):
     posts = response.css("article.post")
@@ -29,8 +28,5 @@ class PostSpider(scrapy.Spider):
         headline["imageurl"] = imgsrc2
       headline["id"] = post.xpath("@data-event-tracking").get().split("|")[-2]
       self.headlines.append(headline)
-    if len(self.headlines) > 0:
-      with open(f"archive/{self.publisher}/headlines.jsonc", "w") as f:
-        json.dump(self.headlines, f, default=lambda x: x.__dict__)
-      self.page += 1
-      return [scrapy.Request(url=self.HOST.format(self.page),meta={"dont_cache":True})]
+    self.page += 1
+    return [scrapy.Request(url=self.HOST.format(self.page),meta={"dont_cache":self.dont_cache})]

@@ -16,7 +16,7 @@ NEWSPIDER_MODULE = 'newscrawler.spiders'
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-USER_AGENT = 'ElectionSearchBot/1.0 (+http://electionsearch.ca)'
+# USER_AGENT = 'ElectionSearchBot/1.0 (+http://electionsearch.ca)'
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
