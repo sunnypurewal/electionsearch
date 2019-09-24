@@ -40,7 +40,8 @@ mapping = '''
         "type": "keyword"
       },
       "timestamp": {  
-        "type":"date"
+        "type":"date",
+        "format":"epoch_second"
       },
       "title": {
         "type":"text"

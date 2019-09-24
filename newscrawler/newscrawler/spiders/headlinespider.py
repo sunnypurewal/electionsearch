@@ -36,9 +36,10 @@ class HeadlineSpider(scrapy.Spider):
       if len(fstring) > 0:
         tmp = json.loads(fstring)
         for h in tmp:
+          if not "timestamp" in h: continue
           with open(f"{self.path}/{self.name}/articles/{h['id']}.txt", "r") as f2:
             h["body"] = "\n".join(f2.readlines())
-            h["timestamp"] = int(h["timestamp"]) * 1000
+            h["timestamp"] = int(h["timestamp"]) if not self.name == "cbc" else int(h["timestamp"]/1000)
             es.index(index="articles",id=h["id"],body=h)
         headlines.extend(tmp)
     with open(f"{self.archivedir}/{self.name}/headlines.jsonc", "w") as f:
